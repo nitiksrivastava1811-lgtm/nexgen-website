@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexGen AI Command Center — Nitik Srivastava</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#080808;
+  --surface:#0f0f0f;
+  --surface2:#141414;
+  --surface3:#1a1a1a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --gold:#c9a84c;
+  --gold-dim:rgba(201,168,76,0.15);
+  --gold-glow:rgba(201,168,76,0.08);
+  --white:#f0ede8;
+  --muted:#6b6560;
+  --muted2:#4a4745;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --orange:#f97316;
+  --sidebar:220px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--white);display:flex}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.logo-area{padding:24px 20px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;display:flex;align-items:center;gap:10px}
+.logo-mark{width:30px;height:30px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#000;font-weight:800;flex-shrink:0}
+.logo-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px;margin-top:2px}
+.nav-section{padding:20px 12px 8px;font-size:10px;letter-spacing:2px;color:var(--muted2);font-family:'DM Mono',monospace}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:.15s;margin-bottom:2px;font-size:14px;color:var(--muted);position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--white)}
+.nav-item.active{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,0.2)}
+.nav-item i{width:18px;text-align:center;font-size:14px}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:2px 6px;border-radius:100px;font-family:'DM Mono',monospace}
+.nav-badge.gold{background:var(--gold);color:#000}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border)}
+.founder-chip{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
+.founder-av{width:32px;height:32px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#000;flex-shrink:0}
+.founder-name-s{font-size:13px;font-weight:500;line-height:1.2}
+.founder-role{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* MAIN */
+.main{flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10}
+.page-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.time-chip{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface2);padding:6px 12px;border-radius:6px;border:1px solid var(--border)}
+.status-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);padding:6px 12px;border-radius:6px}
+.status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
+
+/* CONTENT */
+.content{padding:28px;flex:1}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block}
+
+/* METRICS ROW */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:.2s}
+.metric-card:hover{border-color:var(--border2)}
+.metric-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric-card.gold::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.metric-card.green::after{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.metric-card.blue::after{background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.metric-card.orange::after{background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.metric-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:10px}
+.metric-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1;margin-bottom:6px}
+.metric-change{font-size:12px;display:flex;align-items:center;gap:4px}
+.metric-change.up{color:var(--green)}
+.metric-change.down{color:var(--red)}
+
+/* GRID 2-COL */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.2px}
+.card-action{font-size:12px;color:var(--gold);cursor:pointer;font-family:'DM Mono',monospace}
+.card-body{padding:20px}
+
+/* AGENT STATUS CARDS */
+.agents-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;transition:.2s;cursor:pointer}
+.agent-card:hover{border-color:rgba(201,168,76,0.3);background:var(--surface2)}
+.agent-card.working{border-color:rgba(34,197,94,0.2)}
+.agent-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.agent-av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--surface2);border:1px solid var(--border)}
+.agent-st{display:flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Mono',monospace}
+.agent-st.on{color:var(--green)}
+.agent-st.on .dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+.agent-st.busy{color:var(--gold)}
+.agent-st.busy .dot{width:6px;height:6px;background:var(--gold);border-radius:50%}
+.agent-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+.agent-role{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:12px}
+.agent-task{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:12px}
+.progress-bar{height:3px;background:var(--surface3);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.progress-fill.green{background:var(--green)}
+.progress-fill.gold{background:var(--gold)}
+.tasks-done{font-size:11px;color:var(--muted);margin-top:6px;font-family:'DM Mono',monospace}
+
+/* ACTIVITY FEED */
+.activity-feed{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.activity-icon.alex{background:rgba(201,168,76,0.1);color:var(--gold)}
+.activity-icon.maya{background:rgba(59,130,246,0.1);color:var(--blue)}
+.activity-icon.leo{background:rgba(139,92,246,0.1);color:#8b5cf6}
+.activity-icon.zara{background:rgba(249,115,22,0.1);color:var(--orange)}
+.activity-icon.nova{background:rgba(236,72,153,0.1);color:#ec4899}
+.activity-icon.rex{background:rgba(34,197,94,0.1);color:var(--green)}
+.activity-text{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5;flex:1}
+.activity-text strong{color:var(--white);font-weight:500}
+.activity-time{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;flex-shrink:0;margin-top:2px}
+
+/* LEADS TABLE */
+.leads-table{width:100%;border-collapse:collapse}
+.leads-table th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:400}
+.leads-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.leads-table tr:last-child td{border-bottom:none}
+.leads-table tr:hover td{background:var(--surface2)}
+.lead-name{font-weight:500;font-size:14px}
+.lead-company{font-size:12px;color:var(--muted);margin-top:2px}
+.score-bar{display:flex;align-items:center;gap:8px}
+.score-pill{font-family:'DM Mono',monospace;font-size:12px;padding:3px 8px;border-radius:4px;font-weight:500}
+.score-pill.hot{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
+.score-pill.warm{background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.2)}
+.score-pill.cold{background:rgba(107,101,96,0.2);color:var(--muted);border:1px solid var(--border)}
+.status-tag{font-size:11px;padding:4px 10px;border-radius:100px;font-family:'DM Mono',monospace}
+.status-tag.new{background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.2)}
+.status-tag.contacted{background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.2)}
+.status-tag.converted{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.status-tag.lost{background:rgba(107,101,96,0.15);color:var(--muted);border:1px solid var(--border)}
+.action-btns{display:flex;gap:6px}
+.btn-xs{font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--white);cursor:pointer;font-family:'DM Mono',monospace;transition:.15s}
+.btn-xs:hover{border-color:var(--gold);color:var(--gold)}
+.btn-xs.primary{background:var(--gold-dim);border-color:rgba(201,168,76,0.3);color:var(--gold)}
+
+/* MINI CHART */
+.mini-chart{height:120px;display:flex;align-items:flex-end;gap:6px;padding:0 4px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-col{width:100%;border-radius:4px 4px 0 0;transition:height .5s ease;min-height:4px}
+.bar-col.gold{background:rgba(201,168,76,0.5)}
+.bar-col.gold:hover{background:var(--gold)}
+.bar-lbl{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-label{color:var(--muted)}
+.legend-val{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--white)}
+
+/* CAMPAIGN CARDS */
+.campaign-list{display:flex;flex-direction:column;gap:10px}
+.campaign-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.campaign-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.campaign-name{font-size:13px;font-weight:500}
+.campaign-platform{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;background:var(--surface3);padding:2px 8px;border-radius:4px}
+.campaign-metrics{display:flex;gap:20px}
+.c-metric{font-size:11px;color:var(--muted)}
+.c-metric span{color:var(--white);font-family:'DM Mono',monospace;font-weight:500;display:block;font-size:13px;margin-bottom:2px}
+
+/* AI TERMINAL */
+.terminal{background:#050505;border-radius:10px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;height:200px;overflow-y:auto;border:1px solid rgba(255,255,255,0.05)}
+.terminal-line{line-height:1.8;display:flex;gap:8px}
+.t-time{color:var(--muted2)}
+.t-agent{font-weight:500}
+.t-alex{color:var(--gold)}
+.t-maya{color:var(--blue)}
+.t-leo{color:#8b5cf6}
+.t-zara{color:var(--orange)}
+.t-nova{color:#ec4899}
+.t-rex{color:var(--green)}
+.t-msg{color:rgba(255,255,255,0.5)}
+.t-cursor{display:inline-block;width:8px;height:12px;background:var(--gold);animation:blink-cursor .8s infinite;vertical-align:middle;margin-left:4px}
+@keyframes blink-cursor{0%,100%{opacity:1}50%{opacity:0}}
+
+/* REPORT PANEL */
+.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.report-metric{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.report-metric .val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--gold);margin-bottom:4px}
+.report-metric .lbl{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.setting-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.setting-card h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.setting-card p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13px}
+.toggle{width:40px;height:22px;background:var(--surface3);border-radius:100px;position:relative;cursor:pointer;border:1px solid var(--border);transition:.2s}
+.toggle.on{background:var(--gold)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.toggle.on::after{left:20px}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:20px;right:20px;background:var(--surface);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px 18px;max-width:300px;z-index:1000;display:none;animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.notif-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;color:var(--gold)}
+.notif-msg{font-size:12px;color:var(--muted)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px;max-width:480px;width:90%;position:relative}
+.modal h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-field label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.form-field input,.form-field select,.form-field textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--gold)}
+.form-field select option{background:var(--surface)}
+.btn-gold{background:var(--gold);color:#000;border:none;padding:11px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.btn-gold:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:11px 22px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:.15s}
+.btn-ghost:hover{color:var(--white);border-color:var(--border2)}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+
+/* MOBILE NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px;z-index:100;gap:4px}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:10px;font-family:'DM Mono',monospace;transition:.15s}
+.mob-nav-item.active{color:var(--gold);background:var(--gold-dim)}
+.mob-nav-item i{font-size:18px}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .mob-nav{display:flex}
+  body{padding-bottom:70px}
+  .main{height:100dvh;overflow-y:auto}
+  .metrics-row{grid-template-columns:1fr 1fr}
+  .agents-row{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3,.settings-grid{grid-template-columns:1fr}
+  .report-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .metrics-row{grid-template-columns:1fr}
+  .agents-row{grid-template-columns:1fr}
+  .report-grid{grid-template-columns:1fr}
+  .content{padding:16px}
+  .topbar{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo"><div class="logo-mark">N</div><div><div>NexGen</div><div class="logo-sub">AI COMMAND CENTER</div></div></div>
+  </div>
+  <div class="nav-section">MAIN</div>
+  <div class="nav-item active" onclick="showPanel('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+  <div class="nav-item" onclick="showPanel('agents',this)"><i class="fas fa-robot"></i> AI Agents <span class="nav-badge gold">6</span></div>
+  <div class="nav-item" onclick="showPanel('leads',this)"><i class="fas fa-users"></i> Leads <span class="nav-badge" id="leadBadge">3</span></div>
+  <div class="nav-item" onclick="showPanel('campaigns',this)"><i class="fas fa-bullhorn"></i> Campaigns</div>
+  <div class="nav-section">ANALYTICS</div>
+  <div class="nav-item" onclick="showPanel('reports',this)"><i class="fas fa-chart-bar"></i> Reports</div>
+  <div class="nav-section">SYSTEM</div>
+  <div class="nav-item" onclick="showPanel('settings',this)"><i class="fas fa-cog"></i> Settings</div>
+  <div class="sidebar-footer">
+    <div class="founder-chip">
+      <div class="founder-av">N</div>
+      <div><div class="founder-name-s">Nitik Srivastava</div><div class="founder-role">CEO · FOUNDER</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-right">
+      <div class="time-chip" id="timeClock">--:--:-- --</div>
+      <div class="status-chip"><div class="status-dot"></div> All Agents Active</div>
+      <button class="btn-xs primary" onclick="openModal('addLead')"><i class="fas fa-plus"></i> New Lead</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD PANEL -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="metrics-row">
+        <div class="metric-card gold">
+          <div class="metric-label">Total Leads</div>
+          <div class="metric-val" id="m-leads">24</div>
+          <div class="metric-change up"><i class="fas fa-arrow-up"></i> +8 this week</div>
+        </div>
+        <div class="metric-card green">
+          <div class="metric-label">Revenue (MRR)</div>
+          <div class="metric-val">₹1.2L</div>
+          <div class="metric-change up"><i class="fas fa-arrow-up"></i> +23% vs last month</div>
+        </div>
+        <div class="metric-card blue">
+          <div class="metric-label">Active Campaigns</div>
+          <div class="metric-val">7</div>
+          <div class="metric-change up"><i class="fas fa-arrow-up"></i> 2 launched today</div>
+        </div>
+        <div class="metric-card orange">
+          <div class="metric-label">Avg. Client ROI</div>
+          <div class="metric-val">312%</div>
+          <div class="metric-change up"><i class="fas fa-arrow-up"></i> +18% this quarter</div>
+        </div>
+      </div>
+
+      <div class="agents-row">
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">🎯</div><div class="agent-st on"><div class="dot"></div>Working</div></div>
+          <div class="agent-nm">Alex — Sales</div>
+          <div class="agent-role">LEAD QUALIFICATION</div>
+          <div class="agent-task">Sending follow-up email to Ramesh Gupta (TechSolutions Pvt Ltd)...</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:72%"></div></div>
+          <div class="tasks-done">14/20 tasks today</div>
+        </div>
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">📈</div><div class="agent-st on"><div class="dot"></div>Working</div></div>
+          <div class="agent-nm">Maya — SEO</div>
+          <div class="agent-role">RANK TRACKING</div>
+          <div class="agent-task">Analyzing 47 keywords for client Priya Fashions — 12 moved to page 1...</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:88%"></div></div>
+          <div class="tasks-done">22/25 tasks today</div>
+        </div>
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">✍️</div><div class="agent-st busy"><div class="dot"></div>Writing</div></div>
+          <div class="agent-nm">Leo — Content</div>
+          <div class="agent-role">CONTENT CREATION</div>
+          <div class="agent-task">Writing "10 Reasons to Switch to Digital Marketing" blog post for client...</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:45%"></div></div>
+          <div class="tasks-done">9/20 tasks today</div>
+        </div>
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">💰</div><div class="agent-st on"><div class="dot"></div>Optimizing</div></div>
+          <div class="agent-nm">Zara — Ads</div>
+          <div class="agent-role">PPC MANAGEMENT</div>
+          <div class="agent-task">Paused 3 underperforming ad sets. Reallocated ₹4,500 budget to top performers...</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div>
+          <div class="tasks-done">12/18 tasks today</div>
+        </div>
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">📱</div><div class="agent-st busy"><div class="dot"></div>Posting</div></div>
+          <div class="agent-nm">Nova — Social</div>
+          <div class="agent-role">SOCIAL MEDIA</div>
+          <div class="agent-task">Scheduled 6 posts across Instagram & LinkedIn. Replied to 14 comments...</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:80%"></div></div>
+          <div class="tasks-done">16/20 tasks today</div>
+        </div>
+        <div class="agent-card working">
+          <div class="agent-head"><div class="agent-av">📊</div><div class="agent-st on"><div class="dot"></div>Analyzing</div></div>
+          <div class="agent-nm">Rex — Analytics</div>
+          <div class="agent-role">DATA & REPORTS</div>
+          <div class="agent-task">Compiling weekly performance report for 5 clients. Emails scheduled for Monday 9am...</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:95%"></div></div>
+          <div class="tasks-done">19/20 tasks today</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Lead Volume — Last 7 Days</div><div class="card-action">View all →</div></div>
+          <div class="card-body">
+            <div class="mini-chart">
+              <div class="bar-wrap"><div class="bar-col gold" style="height:45%"></div><div class="bar-lbl">Mon</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:60%"></div><div class="bar-lbl">Tue</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:35%"></div><div class="bar-lbl">Wed</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:80%"></div><div class="bar-lbl">Thu</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:55%"></div><div class="bar-lbl">Fri</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:90%"></div><div class="bar-lbl">Sat</div></div>
+              <div class="bar-wrap"><div class="bar-col gold" style="height:40%"></div><div class="bar-lbl">Sun</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Lead Sources</div></div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <svg class="donut-svg" width="90" height="90" viewBox="0 0 90 90">
+                <circle cx="45" cy="45" r="35" fill="none" stroke="#1a1a1a" stroke-width="12"/>
+                <circle cx="45" cy="45" r="35" fill="none" stroke="#c9a84c" stroke-width="12" stroke-dasharray="88 132" stroke-dashoffset="0" transform="rotate(-90 45 45)"/>
+                <circle cx="45" cy="45" r="35" fill="none" stroke="#3b82f6" stroke-width="12" stroke-dasharray="55 165" stroke-dashoffset="-88" transform="rotate(-90 45 45)"/>
+                <circle cx="45" cy="45" r="35" fill="none" stroke="#22c55e" stroke-width="12" stroke-dasharray="35 185" stroke-dashoffset="-143" transform="rotate(-90 45 45)"/>
+                <circle cx="45" cy="45" r="35" fill="none" stroke="#6b6560" stroke-width="12" stroke-dasharray="22 198" stroke-dashoffset="-178" transform="rotate(-90 45 45)"/>
+              </svg>
+              <div class="donut-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#c9a84c"></div><div class="legend-label">Website</div><div class="legend-val">40%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><div class="legend-label">Google Ads</div><div class="legend-val">25%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><div class="legend-label">Social</div><div class="legend-val">16%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#6b6560"></div><div class="legend-label">Referral</div><div class="legend-val">19%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">🤖 AI Agent Live Log</div><div class="card-action" id="clearLog" onclick="clearTerminal()">Clear</div></div>
+        <div class="card-body" style="padding:0">
+          <div class="terminal" id="terminal">
+            <div class="terminal-line"><span class="t-time">09:14:02</span><span class="t-agent t-alex">[ALEX]</span><span class="t-msg">New lead received: Ramesh Gupta (TechSolutions) — Score: 87/100 🔥</span></div>
+            <div class="terminal-line"><span class="t-time">09:14:05</span><span class="t-agent t-alex">[ALEX]</span><span class="t-msg">Sending high-value welcome email to ramesh@techsolutions.in...</span></div>
+            <div class="terminal-line"><span class="t-time">09:15:11</span><span class="t-agent t-maya">[MAYA]</span><span class="t-msg">Rank update: "digital marketing agency lucknow" → moved to #4 ✅</span></div>
+            <div class="terminal-line"><span class="t-time">09:18:33</span><span class="t-agent t-zara">[ZARA]</span><span class="t-msg">Google Ads: Paused "broad match" ad set — CPC ₹48 above threshold</span></div>
+            <div class="terminal-line"><span class="t-time">09:22:07</span><span class="t-agent t-nova">[NOVA]</span><span class="t-msg">Posted: "5 SEO Mistakes Killing Your Traffic" to Instagram & LinkedIn</span></div>
+            <div class="terminal-line"><span class="t-time">09:25:44</span><span class="t-agent t-leo">[LEO]</span><span class="t-msg">Blog draft complete: "Digital Marketing for Startups in 2024" — 1,240 words</span></div>
+            <div class="terminal-line"><span class="t-time">09:28:19</span><span class="t-agent t-rex">[REX]</span><span class="t-msg">Weekly report compiled for 5 clients — scheduled for Monday 9:00 AM</span></div>
+            <div class="terminal-line"><span class="t-time">09:31:02</span><span class="t-agent t-alex">[ALEX]</span><span class="t-msg">Lead qualified: Priya Sharma (FashionHub) → moved to HOT pipeline 🎯</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS PANEL -->
+    <div class="panel" id="panel-agents">
+      <div class="agents-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="agent-card" onclick="openAgentModal('Alex','Sales Agent','Handles lead qualification, follow-up emails, and sales pipeline. Scores every lead and sends personalized responses within minutes.')">
+          <div class="agent-head"><div class="agent-av">🎯</div><div class="agent-st on"><div class="dot"></div>Active</div></div>
+          <div class="agent-nm">Alex</div><div class="agent-role">SALES AGENT</div>
+          <div class="agent-task">Processes new leads, scores them 1-100, sends instant emails, books calls for hot leads.</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:72%"></div></div>
+          <div class="tasks-done">14 tasks done today · Click to configure</div>
+        </div>
+        <div class="agent-card" onclick="openAgentModal('Maya','SEO Agent','Runs full SEO campaigns including technical audits, keyword tracking, backlink analysis, and on-page optimization for all clients.')">
+          <div class="agent-head"><div class="agent-av">📈</div><div class="agent-st on"><div class="dot"></div>Active</div></div>
+          <div class="agent-nm">Maya</div><div class="agent-role">SEO AGENT</div>
+          <div class="agent-task">Tracks 200+ keywords daily, runs monthly technical audits, builds backlinks, optimizes page content.</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:88%"></div></div>
+          <div class="tasks-done">22 tasks done today · Click to configure</div>
+        </div>
+        <div class="agent-card" onclick="openAgentModal('Leo','Content Agent','Creates SEO blog posts, social captions, email newsletters, and ad copy — all tailored to each client\'s brand voice.')">
+          <div class="agent-head"><div class="agent-av">✍️</div><div class="agent-st busy"><div class="dot"></div>Writing</div></div>
+          <div class="agent-nm">Leo</div><div class="agent-role">CONTENT AGENT</div>
+          <div class="agent-task">Writes 8 blog posts/month per client, daily social captions, weekly email newsletters.</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:45%"></div></div>
+          <div class="tasks-done">9 tasks done today · Click to configure</div>
+        </div>
+        <div class="agent-card" onclick="openAgentModal('Zara','Ads Agent','Manages Google Ads and Meta Ads campaigns — handling bidding, A/B testing, audience targeting, and daily budget optimization.')">
+          <div class="agent-head"><div class="agent-av">💰</div><div class="agent-st on"><div class="dot"></div>Optimizing</div></div>
+          <div class="agent-nm">Zara</div><div class="agent-role">ADS AGENT</div>
+          <div class="agent-task">Manages ₹2L+ monthly ad spend across Google & Meta, runs daily bid adjustments and A/B tests.</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div>
+          <div class="tasks-done">12 tasks done today · Click to configure</div>
+        </div>
+        <div class="agent-card" onclick="openAgentModal('Nova','Social Media Agent','Schedules and publishes content across Instagram, LinkedIn, Facebook and X. Monitors comments and engagement 24/7.')">
+          <div class="agent-head"><div class="agent-av">📱</div><div class="agent-st busy"><div class="dot"></div>Posting</div></div>
+          <div class="agent-nm">Nova</div><div class="agent-role">SOCIAL AGENT</div>
+          <div class="agent-task">Manages 4 platforms per client, schedules 20+ posts/month, monitors and replies to engagement.</div>
+          <div class="progress-bar"><div class="progress-fill gold" style="width:80%"></div></div>
+          <div class="tasks-done">16 tasks done today · Click to configure</div>
+        </div>
+        <div class="agent-card" onclick="openAgentModal('Rex','Analytics Agent','Collects all campaign data, builds weekly client reports, tracks ROI, and sends Monday morning performance summaries.')">
+          <div class="agent-head"><div class="agent-av">📊</div><div class="agent-st on"><div class="dot"></div>Analyzing</div></div>
+          <div class="agent-nm">Rex</div><div class="agent-role">ANALYTICS AGENT</div>
+          <div class="agent-task">Tracks all KPIs, compiles weekly reports for every client, provides ROI analysis and recommendations.</div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:95%"></div></div>
+          <div class="tasks-done">19 tasks done today · Click to configure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADS PANEL -->
+    <div class="panel" id="panel-leads">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px">Lead Pipeline</div>
+          <div style="font-size:13px;color:var(--muted)">Managed by Alex AI · Auto-scored & auto-emailed</div>
+        </div>
+        <button class="btn-gold" onclick="openModal('addLead')"><i class="fas fa-plus"></i> Add Lead</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="leads-table" id="leadsTable">
+            <thead>
+              <tr>
+                <th>Contact</th>
+                <th>Service</th>
+                <th>Budget</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leadsBody">
+              <tr>
+                <td><div class="lead-name">Ramesh Gupta</div><div class="lead-company">TechSolutions Pvt Ltd</div></td>
+                <td>Full Package</td>
+                <td>₹25,000+</td>
+                <td><span class="score-pill hot">87 🔥</span></td>
+                <td><span class="status-tag contacted">Contacted</span></td>
+                <td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="lead-name">Priya Sharma</div><div class="lead-company">FashionHub India</div></td>
+                <td>SEO + Social</td>
+                <td>₹15,000+</td>
+                <td><span class="score-pill hot">79 🔥</span></td>
+                <td><span class="status-tag new">New</span></td>
+                <td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="lead-name">Arjun Mehta</div><div class="lead-company">Mehta Real Estate</div></td>
+                <td>Google Ads</td>
+                <td>₹10,000+</td>
+                <td><span class="score-pill warm">62 🌡️</span></td>
+                <td><span class="status-tag contacted">Contacted</span></td>
+                <td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="lead-name">Sunita Rao</div><div class="lead-company">Rao Restaurants</div></td>
+                <td>Social Media</td>
+                <td>₹8,000+</td>
+                <td><span class="score-pill warm">55 🌡️</span></td>
+                <td><span class="status-tag new">New</span></td>
+                <td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="lead-name">Vikram Joshi</div><div class="lead-company">JoshiCar Dealership</div></td>
+                <td>Content + SEO</td>
+                <td>₹12,000+</td>
+                <td><span class="score-pill cold">38 ❄️</span></td>
+                <td><span class="status-tag lost">Nurturing</span></td>
+                <td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS PANEL -->
+    <div class="panel" id="panel-campaigns">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px">Active Campaigns</div>
+          <div style="font-size:13px;color:var(--muted)">Managed by Zara & Nova AI Agents</div>
+        </div>
+        <button class="btn-gold" onclick="openModal('addCampaign')"><i class="fas fa-plus"></i> New Campaign</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="campaign-list" id="campaignList">
+            <div class="campaign-item">
+              <div class="campaign-top"><div class="campaign-name">TechSolutions — Google Search</div><span class="campaign-platform">GOOGLE ADS</span></div>
+              <div class="campaign-metrics">
+                <div class="c-metric"><span>₹24,500</span>Budget/mo</div>
+                <div class="c-metric"><span>4.2%</span>CTR</div>
+                <div class="c-metric"><span>₹38</span>CPC</div>
+                <div class="c-metric"><span>28</span>Conversions</div>
+                <div class="c-metric"><span style="color:var(--green)">▲ Live</span>Status</div>
+              </div>
+            </div>
+            <div class="campaign-item">
+              <div class="campaign-top"><div class="campaign-name">FashionHub — Instagram Reels</div><span class="campaign-platform">META ADS</span></div>
+              <div class="campaign-metrics">
+                <div class="c-metric"><span>₹15,000</span>Budget/mo</div>
+                <div class="c-metric"><span>3.8%</span>CTR</div>
+                <div class="c-metric"><span>₹22</span>CPC</div>
+                <div class="c-metric"><span>41</span>Conversions</div>
+                <div class="c-metric"><span style="color:var(--green)">▲ Live</span>Status</div>
+              </div>
+            </div>
+            <div class="campaign-item">
+              <div class="campaign-top"><div class="campaign-name">Mehta Real Estate — YouTube</div><span class="campaign-platform">YOUTUBE ADS</span></div>
+              <div class="campaign-metrics">
+                <div class="c-metric"><span>₹18,000</span>Budget/mo</div>
+                <div class="c-metric"><span>2.1%</span>CTR</div>
+                <div class="c-metric"><span>₹55</span>CPC</div>
+                <div class="c-metric"><span>12</span>Conversions</div>
+                <div class="c-metric"><span style="color:var(--gold)">● Optimizing</span>Status</div>
+              </div>
+            </div>
+            <div class="campaign-item">
+              <div class="campaign-top"><div class="campaign-name">NexGen Digital — SEO Content Push</div><span class="campaign-platform">ORGANIC SEO</span></div>
+              <div class="campaign-metrics">
+                <div class="c-metric"><span>8 posts</span>This month</div>
+                <div class="c-metric"><span>+34%</span>Traffic</div>
+                <div class="c-metric"><span>14</span>New keywords</div>
+                <div class="c-metric"><span>5</span>Page 1 ranks</div>
+                <div class="c-metric"><span style="color:var(--green)">▲ Live</span>Status</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS PANEL -->
+    <div class="panel" id="panel-reports">
+      <div style="margin-bottom:20px">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px">Weekly Performance Report</div>
+        <div style="font-size:13px;color:var(--muted)">Generated by Rex AI · Last updated: Today 9:28 AM</div>
+      </div>
+      <div class="report-grid">
+        <div class="report-metric"><div class="val">₹1,24,500</div><div class="lbl">Total MRR</div></div>
+        <div class="report-metric"><div class="val">24</div><div class="lbl">Total Leads</div></div>
+        <div class="report-metric"><div class="val">5</div><div class="lbl">Active Clients</div></div>
+        <div class="report-metric"><div class="val">312%</div><div class="lbl">Avg. ROI</div></div>
+        <div class="report-metric"><div class="val">7</div><div class="lbl">Live Campaigns</div></div>
+        <div class="report-metric"><div class="val">98%</div><div class="lbl">Client Retention</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">AI Agent Performance This Week</div></div>
+        <div class="card-body" style="overflow-x:auto">
+          <table class="leads-table">
+            <thead><tr><th>Agent</th><th>Tasks Done</th><th>Emails Sent</th><th>Conversions</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>🎯 Alex — Sales</td><td>94</td><td>47</td><td>3 leads converted</td><td><span class="status-tag converted">Excellent</span></td></tr>
+              <tr><td>📈 Maya — SEO</td><td>154</td><td>5 reports</td><td>14 new page-1 keywords</td><td><span class="status-tag converted">Excellent</span></td></tr>
+              <tr><td>✍️ Leo — Content</td><td>63</td><td>—</td><td>8 blogs published</td><td><span class="status-tag new">Good</span></td></tr>
+              <tr><td>💰 Zara — Ads</td><td>84</td><td>—</td><td>81 conversions, ₹57,500 revenue</td><td><span class="status-tag converted">Excellent</span></td></tr>
+              <tr><td>📱 Nova — Social</td><td>112</td><td>—</td><td>+420 followers, 2.4k engagements</td><td><span class="status-tag converted">Excellent</span></td></tr>
+              <tr><td>📊 Rex — Analytics</td><td>133</td><td>5 reports</td><td>All reports delivered on time</td><td><span class="status-tag converted">Excellent</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="panel" id="panel-settings">
+      <div style="margin-bottom:20px;font-family:'Syne',sans-serif;font-size:18px;font-weight:800">System Settings</div>
+      <div class="settings-grid">
+        <div class="setting-card">
+          <h4>AI Agent Automation</h4>
+          <p>Control which AI agents run automatically vs. need your approval first.</p>
+          <div class="toggle-row"><span class="toggle-label">Alex auto-emails leads</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Maya auto-posts SEO reports</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Nova auto-publishes posts</span><div class="toggle" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Zara auto-adjusts ad bids</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Rex sends Monday reports</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+        </div>
+        <div class="setting-card">
+          <h4>Notifications</h4>
+          <p>Choose when NexGen alerts you about important events.</p>
+          <div class="toggle-row"><span class="toggle-label">New hot lead (score 70+)</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">New client converted</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Campaign goes above budget</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Weekly summary email</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Client mentions on social</span><div class="toggle" onclick="toggleSwitch(this)"></div></div>
+        </div>
+        <div class="setting-card">
+          <h4>Company Profile</h4>
+          <p>Your agency details used across all AI agent communications.</p>
+          <div class="form-field"><label>Agency Name</label><input type="text" value="NexGen Digital"></div>
+          <div class="form-field"><label>Founder / CEO</label><input type="text" value="Nitik Srivastava"></div>
+          <div class="form-field"><label>Contact Email</label><input type="text" value="hello@nexgendigital.in"></div>
+          <div class="form-field"><label>WhatsApp</label><input type="text" value="+91 XXXXX XXXXX"></div>
+          <button class="btn-gold" onclick="showNotif('Profile saved successfully!')">Save Changes</button>
+        </div>
+        <div class="setting-card">
+          <h4>Integrations</h4>
+          <p>Connect tools to power up your AI agents.</p>
+          <div class="toggle-row"><span class="toggle-label">Tidio Chat (website)</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Mailchimp (email campaigns)</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Google Analytics</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Buffer (social scheduling)</span><div class="toggle" onclick="toggleSwitch(this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Formspree (form leads)</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="mob-nav">
+  <div class="mob-nav-item active" onclick="showPanel('dashboard',this)"><i class="fas fa-th-large"></i>Home</div>
+  <div class="mob-nav-item" onclick="showPanel('agents',this)"><i class="fas fa-robot"></i>Agents</div>
+  <div class="mob-nav-item" onclick="showPanel('leads',this)"><i class="fas fa-users"></i>Leads</div>
+  <div class="mob-nav-item" onclick="showPanel('campaigns',this)"><i class="fas fa-bullhorn"></i>Campaigns</div>
+  <div class="mob-nav-item" onclick="showPanel('settings',this)"><i class="fas fa-cog"></i>Settings</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-addLead">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addLead')"><i class="fas fa-times"></i></button>
+    <h3>Add New Lead</h3>
+    <p>Alex AI will instantly score this lead and send a personalized email.</p>
+    <div class="form-field"><label>Full Name *</label><input type="text" id="lName" placeholder="e.g. Ramesh Gupta"></div>
+    <div class="form-field"><label>Company</label><input type="text" id="lCompany" placeholder="e.g. TechSolutions Pvt Ltd"></div>
+    <div class="form-field"><label>Service Interested In</label>
+      <select id="lService"><option>SEO Optimization</option><option>Google Ads</option><option>Social Media</option><option>Content Marketing</option><option>Full Package</option></select>
+    </div>
+    <div class="form-field"><label>Monthly Budget</label>
+      <select id="lBudget"><option>Under ₹10,000</option><option>₹10,000–₹25,000</option><option>₹25,000–₹50,000</option><option>₹50,000+</option></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('addLead')">Cancel</button>
+      <button class="btn-gold" onclick="addLead()">Add & Auto-Email →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-addCampaign">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addCampaign')"><i class="fas fa-times"></i></button>
+    <h3>Launch New Campaign</h3>
+    <p>Zara or Nova AI will take over once you set this up.</p>
+    <div class="form-field"><label>Campaign Name *</label><input type="text" placeholder="e.g. Summer Sale Push"></div>
+    <div class="form-field"><label>Platform</label>
+      <select><option>Google Ads</option><option>Meta (Facebook/Instagram)</option><option>LinkedIn</option><option>Organic SEO</option><option>Email</option></select>
+    </div>
+    <div class="form-field"><label>Monthly Budget (₹)</label><input type="number" placeholder="e.g. 15000"></div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('addCampaign')">Cancel</button>
+      <button class="btn-gold" onclick="addCampaign()">Launch Campaign →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-agent">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('agent')"><i class="fas fa-times"></i></button>
+    <h3 id="agentModalName">Agent</h3>
+    <p id="agentModalDesc"></p>
+    <div class="toggle-row" style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px"><span class="toggle-label">Agent Active</span><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+    <div class="modal-btns"><button class="btn-ghost" onclick="closeModal('agent')">Close</button><button class="btn-gold" onclick="closeModal('agent');showNotif('Agent settings saved!')">Save Settings</button></div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <div class="notif-title" id="notifTitle">NexGen Alert</div>
+  <div class="notif-msg" id="notifMsg"></div>
+</div>
+
+<script>
+// CLOCK
+function updateClock(){
+  const n=new Date()
+  document.getElementById('timeClock').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})
+}
+setInterval(updateClock,1000);updateClock()
+
+// PANEL NAVIGATION
+function showPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'))
+  document.getElementById('panel-'+id).classList.add('active')
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'))
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'))
+  if(el){el.classList.add('active')}
+  const titles={dashboard:'Dashboard',agents:'AI Agents',leads:'Lead Pipeline',campaigns:'Campaigns',reports:'Reports',settings:'Settings'}
+  document.getElementById('pageTitle').textContent=titles[id]||id
+}
+
+// MODALS
+function openModal(id){document.getElementById('modal-'+id).classList.add('open')}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}))
+
+function openAgentModal(name,role,desc){
+  document.getElementById('agentModalName').textContent=name+' — '+role
+  document.getElementById('agentModalDesc').textContent=desc
+  openModal('agent')
+}
+
+// NOTIFICATION
+function showNotif(msg,title='NexGen AI'){
+  const n=document.getElementById('notif')
+  document.getElementById('notifTitle').textContent=title
+  document.getElementById('notifMsg').textContent=msg
+  n.style.display='block'
+  setTimeout(()=>{n.style.display='none'},3500)
+}
+
+// TOGGLE
+function toggleSwitch(el){el.classList.toggle('on')}
+
+// ADD LEAD
+let leadCount=5
+function addLead(){
+  const name=document.getElementById('lName').value.trim()
+  if(!name)return
+  const company=document.getElementById('lCompany').value||'—'
+  const service=document.getElementById('lService').value
+  const budget=document.getElementById('lBudget').value
+  const score=Math.floor(Math.random()*30)+55
+  const tag=score>=75?'hot':score>=55?'warm':'cold'
+  const emoji=score>=75?'🔥':score>=55?'🌡️':'❄️'
+  const tbody=document.getElementById('leadsBody')
+  const tr=document.createElement('tr')
+  tr.innerHTML=`<td><div class="lead-name">${name}</div><div class="lead-company">${company}</div></td><td>${service}</td><td>${budget}</td><td><span class="score-pill ${tag}">${score} ${emoji}</span></td><td><span class="status-tag new">New</span></td><td><div class="action-btns"><button class="btn-xs primary">Email</button><button class="btn-xs">Call</button><button class="btn-xs" onclick="convertLead(this)">Convert</button></div></td>`
+  tbody.prepend(tr)
+  leadCount++
+  document.getElementById('m-leads').textContent=leadCount
+  document.getElementById('leadBadge').textContent=leadCount
+  closeModal('addLead')
+  document.getElementById('lName').value=''
+  document.getElementById('lCompany').value=''
+  addTerminalLine('alex','New lead added: '+name+' — Score: '+score+'/100. Sending welcome email...')
+  showNotif('Alex AI is emailing '+name+' right now!','🎯 New Lead Added')
+}
+
+// CONVERT LEAD
+function convertLead(btn){
+  const row=btn.closest('tr')
+  const statusCell=row.querySelector('.status-tag')
+  statusCell.className='status-tag converted'
+  statusCell.textContent='Converted ✅'
+  btn.textContent='Client'
+  btn.classList.add('primary')
+  showNotif('Lead converted to client! Rex will set up their dashboard.','🎉 New Client!')
+}
+
+// ADD CAMPAIGN
+function addCampaign(){
+  closeModal('addCampaign')
+  showNotif('Campaign created! Zara AI is now setting it up.','📢 Campaign Launched')
+}
+
+// TERMINAL
+function addTerminalLine(agent,msg){
+  const t=document.getElementById('terminal')
+  if(!t)return
+  const now=new Date()
+  const time=now.toTimeString().slice(0,8)
+  const names={alex:'ALEX',maya:'MAYA',leo:'LEO',zara:'ZARA',nova:'NOVA',rex:'REX'}
+  const d=document.createElement('div')
+  d.className='terminal-line'
+  d.innerHTML=`<span class="t-time">${time}</span><span class="t-agent t-${agent}">[${names[agent]}]</span><span class="t-msg">${msg}</span>`
+  t.appendChild(d)
+  t.scrollTop=t.scrollHeight
+}
+
+function clearTerminal(){
+  const t=document.getElementById('terminal')
+  if(t)t.innerHTML=''
+  showNotif('Terminal log cleared.')
+}
+
+// LIVE TERMINAL SIMULATION
+const liveLogs=[
+  {a:'maya',m:'Keyword "digital marketing lucknow" moved from #8 → #4 ✅'},
+  {a:'nova',m:'Scheduled post: "Top 5 tools for social media growth" → Instagram, LinkedIn'},
+  {a:'alex',m:'Lead follow-up #2 sent to Vikram Joshi (JoshiCar Dealership)'},
+  {a:'zara',m:'A/B test winner: Ad variant B outperforms A by 23% CTR — scaling budget'},
+  {a:'leo',m:'Email newsletter draft ready for client approval: "July Marketing Roundup"'},
+  {a:'rex',m:'Client ROI update: FashionHub at 287% ROI this month 📈'},
+  {a:'alex',m:'Hot lead detected: New form submission — Score 91/100 🔥 Emailing now...'},
+  {a:'maya',m:'Technical SEO audit complete for Mehta Real Estate — 7 issues found, fixing...'},
+]
+let logIdx=0
+setInterval(()=>{
+  const log=liveLogs[logIdx%liveLogs.length]
+  addTerminalLine(log.a,log.m)
+  logIdx++
+},8000)
+
+// NOTIFICATION: simulated incoming lead
+setTimeout(()=>showNotif('New hot lead from website! Score: 91/100 🔥','🎯 Alex AI Alert'),5000)
+</script>
+</body>
+</html>
